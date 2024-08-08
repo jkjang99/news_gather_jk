@@ -304,7 +304,7 @@ def main():
     #     st.write(f"중복 제거 후 기사 수: {unique_count}")
     #     st.write(f"제거된 기사 수: {removed_count}")
 
-     if st.button("뉴스 분석 시작"):
+    if st.button("뉴스 분석 시작"):
         with st.spinner("뉴스를 분석 중입니다..."):
             excel_buffer, excel_filename, total_count, unique_count, removed_count = run_news_analysis(keywords)
             st.session_state.excel_buffer = excel_buffer
