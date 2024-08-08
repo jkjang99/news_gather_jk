@@ -315,6 +315,13 @@ def main():
         st.write(f"중복 제거 후 기사 수: {unique_count}")
         st.write(f"제거된 기사 수: {removed_count}")
 
+
+
+    if st.session_state.excel_filepath and st.button("텔레그램으로 메시지 전송"):
+        with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
+            send_telegram_messages_sync(st.session_state.excel_filepath)
+        st.success("텔레그램 메시지 전송이 완료되었습니다!")
+
         # 다운로드 버튼 추가
         st.download_button(
             label="Excel 파일 다운로드",
@@ -322,11 +329,6 @@ def main():
             file_name=st.session_state.excel_filename,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-    if st.session_state.excel_filepath and st.button("텔레그램으로 메시지 전송"):
-        with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
-            send_telegram_messages_sync(st.session_state.excel_filepath)
-        st.success("텔레그램 메시지 전송이 완료되었습니다!")
 
 
 if __name__ == "__main__":
