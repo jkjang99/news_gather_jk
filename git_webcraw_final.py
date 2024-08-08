@@ -13,17 +13,10 @@ from difflib import SequenceMatcher
 from openai import OpenAI
 import os
 import streamlit as st
+from telegram.ext import Updater
 
-# # 설정 파일 읽기
-# script_dir = os.path.dirname(os.path.abspath(__file__))
-# config_path = os.path.join(script_dir, 'config.json')
 
-# with open(config_path, 'r', encoding='utf-8') as config_file:
-#     config = json.load(config_file)
-
-# working_dir = config.get('working_dir', script_dir)
-# client = OpenAI(api_key=config['openai_api_key'])
-
+# 환경 변수 설정
 openai_api_key = os.getenv('OPENAI_API_KEY')
 telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
 telegram_channel_id = os.getenv('TELEGRAM_CHANNEL_ID')
@@ -31,8 +24,10 @@ telegram_channel_id = os.getenv('TELEGRAM_CHANNEL_ID')
 # OpenAI 클라이언트 초기화
 client = OpenAI(api_key=openai_api_key)
 
-# Telegram 봇 초기화
-bot = Bot(token=telegram_bot_token)
+# working_dir 설정
+working_dir = os.getcwd()
+
+# 기존 함수들은 그대로 유지
 
 
 def clean_text(text):
@@ -227,113 +222,14 @@ def run_news_analysis(keywords):
     
     return excel_filepath, total_count, unique_count, removed_count
 
-# async def send_telegram_messages(excel_filepath):
-#     bot = telegram.Bot(token=config['telegram_bot_token'])
-#     channel_id = config['telegram_channel_id']
-
-#     df = pd.read_excel(excel_filepath, sheet_name="중복 제거된 뉴스 결과")
-
-#     for index, row in df.iterrows():
-#         message = f"기사발생시간: {row['시간']}\n"
-#         message += f"뉴스기사명: {row['뉴스기사명']}\n"
-#         message += f"URL: {row['URL']}\n"
-#         message += f"사고요약: {row['사고내역']}\n\n"
-        
-#         try:
-#             await bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
-#             st.write(f"메시지 전송 완료: {row['뉴스기사명']}")
-#         except telegram.error.TelegramError as e:
-#             st.write(f"메시지 전송 실패: {e}")
-
-#     st.write("모든 메시지가 전송되었습니다.")
-
-
-
-# def main():
-#     st.title("뉴스 분석 및 텔레그램 메시지 전송")
-
-#     keywords = st.text_input("키워드를 입력하세요 (쉼표로 구분)", "중대재해사망사고")
-#     keywords = [keyword.strip() for keyword in keywords.split(',')]
-
-#     if st.button("뉴스 분석 시작"):
-#         with st.spinner("뉴스를 분석 중입니다..."):
-#             excel_filepath, total_count, unique_count, removed_count = run_news_analysis(keywords)
-
-#         st.success("뉴스 분석이 완료되었습니다!")
-#         st.write(f"Excel 파일이 생성되었습니다: {excel_filepath}")
-#         st.write(f"총 기사 수: {total_count}")
-#         st.write(f"중복 제거 후 기사 수: {unique_count}")
-#         st.write(f"제거된 기사 수: {removed_count}")
-
-#         if st.button("텔레그램으로 메시지 전송"):
-#             with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
-#                 asyncio.run(send_telegram_messages(excel_filepath))
-#             st.success("텔레그램 메시지 전송이 완료되었습니다!")
-
-# if __name__ == "__main__":
-#     main()
-
-# sync로 변경수정(8/7 1시) 
-#def send_telegram_messages_sync(excel_filepath):
-#     bot = Bot(token=config['telegram_bot_token'])
-#     channel_id = config['telegram_channel_id']
-
-#     df = pd.read_excel(excel_filepath, sheet_name="중복 제거된 뉴스 결과")
-
-#     for index, row in df.iterrows():
-#         message = f"기사발생시간: {row['시간']}\n"
-#         message += f"뉴스기사명: {row['뉴스기사명']}\n"
-#         message += f"URL: {row['URL']}\n"
-#         message += f"사고요약: {row['사고내역']}\n\n"
-        
-#         try:
-#             bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
-#             st.write(f"메시지 전송 완료: {row['뉴스기사명']}")
-#         except telegram.error.TelegramError as e:
-#             st.write(f"메시지 전송 실패: {e}")
-
-#     st.write("모든 메시지가 전송되었습니다.")
-
-# def main():
-#     st.title("뉴스 분석 및 텔레그램 메시지 전송")
-
-#     if 'excel_filepath' not in st.session_state:
-#         st.session_state.excel_filepath = None
-
-#     keywords = st.text_input("키워드를 입력하세요 (쉼표로 구분)", "중대재해사망사고")
-#     keywords = [keyword.strip() for keyword in keywords.split(',')]
-
-#     if st.button("뉴스 분석 시작"):
-#         with st.spinner("뉴스를 분석 중입니다..."):
-#             excel_filepath, total_count, unique_count, removed_count = run_news_analysis(keywords)
-#             st.session_state.excel_filepath = excel_filepath
-
-#         st.success("뉴스 분석이 완료되었습니다!")
-#         st.write(f"Excel 파일이 생성되었습니다: {excel_filepath}")
-#         st.write(f"총 기사 수: {total_count}")
-#         st.write(f"중복 제거 후 기사 수: {unique_count}")
-#         st.write(f"제거된 기사 수: {removed_count}")
-
-#     if st.session_state.excel_filepath and st.button("텔레그램으로 메시지 전송"):
-#         with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
-#             send_telegram_messages_sync(st.session_state.excel_filepath)
-#         st.success("텔레그램 메시지 전송이 완료되었습니다!")
-
-# if __name__ == "__main__":
-#     main()
-
-# 다시 async 방식으로 수정(8/7 2시) 
 async def send_telegram_message(bot, channel_id, message):
     await bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
 
 def send_telegram_messages_sync(excel_filepath):
-    bot = Bot(token=config['telegram_bot_token'])
-    channel_id = config['telegram_channel_id']
-
+    updater = Updater(token=telegram_bot_token, use_context=True)
+    bot = updater.bot
+    
     df = pd.read_excel(excel_filepath, sheet_name="중복 제거된 뉴스 결과")
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
 
     for index, row in df.iterrows():
         message = f"기사발생시간: {row['시간']}\n"
@@ -342,12 +238,11 @@ def send_telegram_messages_sync(excel_filepath):
         message += f"사고요약: {row['사고내역']}\n\n"
         
         try:
-            loop.run_until_complete(send_telegram_message(bot, channel_id, message))
+            asyncio.get_event_loop().run_until_complete(send_telegram_message(bot, telegram_channel_id, message))
             st.write(f"메시지 전송 완료: {row['뉴스기사명']}")
         except Exception as e:
             st.write(f"메시지 전송 실패: {e}")
 
-    loop.close()
     st.write("모든 메시지가 전송되었습니다.")
 
 def main():
