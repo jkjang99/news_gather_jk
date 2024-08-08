@@ -6,14 +6,15 @@ from openpyxl import Workbook
 import json
 import pandas as pd
 # import telegram
-from telegram import Bot
-import asyncio
+# from telegram import Bot
 import re
 from difflib import SequenceMatcher
 from openai import OpenAI
 import os
 import streamlit as st
-from telegram.ext import Updater
+# from telegram.ext import Updater
+from telegram.ext import Application
+import asyncio
 
 
 # 환경 변수 설정
@@ -222,12 +223,32 @@ def run_news_analysis(keywords):
     
     return excel_filepath, total_count, unique_count, removed_count
 
-async def send_telegram_message(bot, channel_id, message):
-    await bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
+# async def send_telegram_message(bot, channel_id, message):
+#     await bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
 
-def send_telegram_messages_sync(excel_filepath):
-    updater = Updater(token=telegram_bot_token, use_context=True)
-    bot = updater.bot
+# def send_telegram_messages_sync(excel_filepath):
+#     updater = Updater(token=telegram_bot_token, use_context=True)
+#     bot = updater.bot
+    
+#     df = pd.read_excel(excel_filepath, sheet_name="중복 제거된 뉴스 결과")
+
+#     for index, row in df.iterrows():
+#         message = f"기사발생시간: {row['시간']}\n"
+#         message += f"뉴스기사명: {row['뉴스기사명']}\n"
+#         message += f"URL: {row['URL']}\n"
+#         message += f"사고요약: {row['사고내역']}\n\n"
+        
+#         try:
+#             asyncio.get_event_loop().run_until_complete(send_telegram_message(bot, telegram_channel_id, message))
+#             st.write(f"메시지 전송 완료: {row['뉴스기사명']}")
+#         except Exception as e:
+#             st.write(f"메시지 전송 실패: {e}")
+
+#     st.write("모든 메시지가 전송되었습니다.")
+
+async def send_telegram_messages_async(excel_filepath):
+    application = Application.builder().token(telegram_bot_token).build()
+    bot = application.bot
     
     df = pd.read_excel(excel_filepath, sheet_name="중복 제거된 뉴스 결과")
 
@@ -238,12 +259,15 @@ def send_telegram_messages_sync(excel_filepath):
         message += f"사고요약: {row['사고내역']}\n\n"
         
         try:
-            asyncio.get_event_loop().run_until_complete(send_telegram_message(bot, telegram_channel_id, message))
+            await bot.send_message(chat_id=telegram_channel_id, text=message, parse_mode='HTML')
             st.write(f"메시지 전송 완료: {row['뉴스기사명']}")
         except Exception as e:
             st.write(f"메시지 전송 실패: {e}")
 
     st.write("모든 메시지가 전송되었습니다.")
+
+def send_telegram_messages_sync(excel_filepath):
+    asyncio.run(send_telegram_messages_async(excel_filepath))
 
 def main():
     st.title("뉴스 분석 및 텔레그램 메시지 전송")
@@ -269,6 +293,7 @@ def main():
         with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
             send_telegram_messages_sync(st.session_state.excel_filepath)
         st.success("텔레그램 메시지 전송이 완료되었습니다!")
+
 
 if __name__ == "__main__":
     main()
