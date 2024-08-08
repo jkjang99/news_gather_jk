@@ -14,15 +14,26 @@ from openai import OpenAI
 import os
 import streamlit as st
 
-# 설정 파일 읽기
-script_dir = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(script_dir, 'config.json')
+# # 설정 파일 읽기
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# config_path = os.path.join(script_dir, 'config.json')
 
-with open(config_path, 'r', encoding='utf-8') as config_file:
-    config = json.load(config_file)
+# with open(config_path, 'r', encoding='utf-8') as config_file:
+#     config = json.load(config_file)
 
-working_dir = config.get('working_dir', script_dir)
-client = OpenAI(api_key=config['openai_api_key'])
+# working_dir = config.get('working_dir', script_dir)
+# client = OpenAI(api_key=config['openai_api_key'])
+
+openai_api_key = os.getenv('OPENAI_API_KEY')
+telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+telegram_channel_id = os.getenv('TELEGRAM_CHANNEL_ID')
+
+# OpenAI 클라이언트 초기화
+client = OpenAI(api_key=openai_api_key)
+
+# Telegram 봇 초기화
+bot = Bot(token=telegram_bot_token)
+
 
 def clean_text(text):
     text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', text)
