@@ -154,9 +154,9 @@ def calculate_similarity(text1, text2):
 def run_news_analysis(keywords):
 
   
-    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    excel_filename = f"naver_news_results_{current_time}.xlsx"
-    excel_filepath = os.path.join(working_dir, excel_filename)
+    # current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # excel_filename = f"naver_news_results_{current_time}.xlsx"
+    # excel_filepath = os.path.join(working_dir, excel_filename)
 
     wb = Workbook()
     ws_all = wb.active
@@ -222,7 +222,7 @@ def run_news_analysis(keywords):
             
             time.sleep(1)
 
-    wb.save(excel_filepath)
+    # wb.save(excel_filepath)
     
     # return excel_filepath, total_count, unique_count, removed_count
  
