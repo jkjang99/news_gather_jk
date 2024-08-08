@@ -287,22 +287,13 @@ def send_telegram_messages_sync(excel_filepath):
 def main():
     st.title("뉴스 분석 및 텔레그램 메시지 전송")
 
-    if 'excel_filepath' not in st.session_state:
-        st.session_state.excel_filepath = None
+    if 'excel_buffer' not in st.session_state:
+        st.session_state.excel_buffer = None
+    if 'excel_filename' not in st.session_state:
+        st.session_state.excel_filename = None
 
     keywords = st.text_input("키워드를 입력하세요 (쉼표로 구분)", "중대재해사망사고")
     keywords = [keyword.strip() for keyword in keywords.split(',')]
-
-    # if st.button("뉴스 분석 시작"):
-    #     with st.spinner("뉴스를 분석 중입니다..."):
-    #         excel_filepath, total_count, unique_count, removed_count = run_news_analysis(keywords)
-    #         st.session_state.excel_filepath = excel_filepath
-
-    #     st.success("뉴스 분석이 완료되었습니다!")
-    #     st.write(f"Excel 파일이 생성되었습니다: {excel_filepath}")
-    #     st.write(f"총 기사 수: {total_count}")
-    #     st.write(f"중복 제거 후 기사 수: {unique_count}")
-    #     st.write(f"제거된 기사 수: {removed_count}")
 
     if st.button("뉴스 분석 시작"):
         with st.spinner("뉴스를 분석 중입니다..."):
@@ -315,13 +306,6 @@ def main():
         st.write(f"중복 제거 후 기사 수: {unique_count}")
         st.write(f"제거된 기사 수: {removed_count}")
 
-
-
-    if st.session_state.excel_filepath and st.button("텔레그램으로 메시지 전송"):
-        with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
-            send_telegram_messages_sync(st.session_state.excel_filepath)
-        st.success("텔레그램 메시지 전송이 완료되었습니다!")
-
         # 다운로드 버튼 추가
         st.download_button(
             label="Excel 파일 다운로드",
@@ -330,6 +314,13 @@ def main():
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    if st.session_state.excel_buffer is not None and st.button("텔레그램으로 메시지 전송"):
+        with st.spinner("텔레그램으로 메시지를 전송 중입니다..."):
+            try:
+                send_telegram_messages_sync(st.session_state.excel_buffer)
+                st.success("텔레그램 메시지 전송이 완료되었습니다!")
+            except Exception as e:
+                st.error(f"텔레그램 메시지 전송 중 오류 발생: {str(e)}")
 
 if __name__ == "__main__":
     main()
