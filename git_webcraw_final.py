@@ -15,6 +15,7 @@ import streamlit as st
 # from telegram.ext import Updater
 from telegram.ext import Application
 import asyncio
+from io import BytesIO
 
 
 # 환경 변수 설정
@@ -151,6 +152,8 @@ def calculate_similarity(text1, text2):
     return SequenceMatcher(None, text1, text2).ratio()
 
 def run_news_analysis(keywords):
+
+  
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     excel_filename = f"naver_news_results_{current_time}.xlsx"
     excel_filepath = os.path.join(working_dir, excel_filename)
@@ -221,7 +224,19 @@ def run_news_analysis(keywords):
 
     wb.save(excel_filepath)
     
-    return excel_filepath, total_count, unique_count, removed_count
+    # return excel_filepath, total_count, unique_count, removed_count
+ 
+    
+    # 엑셀 파일을 메모리에 저장
+    excel_buffer = BytesIO()
+    wb.save(excel_buffer)
+    excel_buffer.seek(0)
+
+    # 현재 시간을 파일명에 포함
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    excel_filename = f"naver_news_results_{current_time}.xlsx"
+
+    return excel_buffer, excel_filename, total_count, unique_count, removed_count
 
 # async def send_telegram_message(bot, channel_id, message):
 #     await bot.send_message(chat_id=channel_id, text=message, parse_mode='HTML')
